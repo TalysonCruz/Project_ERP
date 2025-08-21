@@ -61,7 +61,11 @@ export default function Admin() {
   const loadStats = async () => {
     try {
       const name = Cookies.get("name");
-      if (name) setUserName(name);
+
+      if (name) {
+        const decodedName = decodeURIComponent(name);
+        setUserName(decodedName);
+      }
 
       const [productsRes, clientsRes, suppliersRes, usersRes] =
         await Promise.all([

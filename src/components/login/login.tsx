@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import type React from "react";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -42,9 +42,12 @@ export function LoginForm() {
       }
       const data = await response.json();
       const { token, user } = data;
+
       document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24}`;
       document.cookie = `role=${user.role}; path=/; max-age=${60 * 60 * 24}`;
-      document.cookie = `name=${user.name}; path=/; max-age=${60 * 60 * 24}`;
+      document.cookie = `name=${encodeURIComponent(
+        user.name
+      )}; path=/; max-age=${60 * 60 * 24}`;
 
       toast.success("Login feito com sucesso! Bem-vindo ao sistema.");
       await new Promise((resolve) => setTimeout(resolve, 2000));

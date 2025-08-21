@@ -20,10 +20,22 @@ function authorize(pathname: string, role: string) {
 
 function getCookie(req: NextRequest, name: string) {
   const cookieHeader = req.headers.get("cookie") || "";
-  const cookies = Object.fromEntries(
-    cookieHeader.split("; ").map((c) => c.split("="))
-  );
-  return cookies[name];
+  if (!cookieHeader) return undefined;
+
+  const cookies = new Map<string, string>();
+
+  cookieHeader.split(";").forEach((cookie) => {
+    const trimmedCookie = cookie.trim();
+    const equalIndex = trimmedCookie.indexOf("=");
+
+    if (equalIndex > 0) {
+      const key = trimmedCookie.substring(0, equalIndex);
+      const value = trimmedCookie.substring(equalIndex + 1);
+      cookies.set(key, value);
+    }
+  });
+
+  return cookies.get(name);
 }
 
 export async function middleware(req: NextRequest) {

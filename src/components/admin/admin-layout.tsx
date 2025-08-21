@@ -17,14 +17,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
 
-  const handleLogout = () => {
-    Cookies.remove("token");
-    Cookies.remove("role");
-    Cookies.remove("name");
+  // const handleLogout = () => {
+  //   Cookies.remove("token");
+  //   Cookies.remove("role");
+  //   Cookies.remove("name");
 
-    toast.success("Logout realizado com sucesso!");
-    router.push("/");
-  };
+  //   toast.success("Logout realizado com sucesso!");
+  //   router.push("/");
+  // };
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,7 +44,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <span className="font-bold">Sistema de Inventário</span>
           </div>
 
-          <div className="ml-auto flex items-center space-x-2">
+          {/* <div className="ml-auto flex items-center space-x-2">
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4 mr-2" />
               Configurações
@@ -53,7 +53,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <LogOut className="h-4 w-4 mr-2" />
               Sair
             </Button>
-          </div>
+          </div> */}
         </div>
       </header>
 
