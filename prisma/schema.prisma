@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  VENDEDOR
+}
+
+enum OrcamentoStatus {
+  PENDENTE
+  CONFIRMADO
+  CANCELADO
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  password String
+  email    String @unique
+  role     Role   @default(VENDEDOR)
+}
+
+model Client {
+  id          Int         @id @default(autoincrement())
+  name        String
+  email       String      @unique
+  cnpj        String      @unique
+  tel         String
+  inventories Inventory[]
+  orcamentos  Orcamento[]
+}
+
+model Supplier {
+  id          Int         @id @default(autoincrement())
+  name        String
+  email       String      @unique
+  cnpj        String      @unique
+  tel         String
+  inventories Inventory[]
+}
+
+model Produto {
+  id             Int             @id @default(autoincrement())
+  name           String
+  quantity       Int             @default(0)
+  barcode        String          @unique
+  categoryId     Int
+  category       Category        @relation(fields: [categoryId], references: [id])
+  inventories    Inventory[]
+  orcamentoItems OrcamentoItem[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  produtos Produto[]
+}
+
+model Inventory {
+  id         Int      @id @default(autoincrement())
+  type       String // "entrada" ou "saida"
+  quantity   Int
+  created_at DateTime @default(now())
+
+  produtoId Int
+  produto   Produto @relation(fields: [produtoId], references: [id])
+
+  supplierId Int? // usado apenas se type = "entrada"
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  clientId Int? // usado apenas se type = "saida"
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  orcamentoId Int?
+  orcamento   Orcamento? @relation(fields: [orcamentoId], references: [id])
+}
+
+model Orcamento {
+  id          Int             @id @default(autoincrement())
+  numero      String          @unique @default(cuid())
+  status      OrcamentoStatus @default(PENDENTE)
+  desconto    Float           @default(0)
+  frete       Float           @default(0)
+  total       Float           @default(0)
+  observacoes String?
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+
+  clientId Int
+  client   Client @relation(fields: [clientId], references: [id])
+
+  items       OrcamentoItem[]
+  inventories Inventory[]
+}
+
+model OrcamentoItem {
+  id       Int   @id @default(autoincrement())
+  quantity Int
+  preco    Float
+  subtotal Float
+
+  orcamentoId Int
+  orcamento   Orcamento @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+
+  produtoId Int
+  produto   Produto @relation(fields: [produtoId], references: [id])
+
+  @@unique([orcamentoId, produtoId])
+}
