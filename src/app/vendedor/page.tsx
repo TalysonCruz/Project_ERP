@@ -18,6 +18,7 @@ import { InventoryManager } from "@/components/admin/inventory-manager";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
+import type { Orcamento } from "@prisma/client";
 
 export default function VendedorDashboard() {
   const router = useRouter();
@@ -34,19 +35,24 @@ export default function VendedorDashboard() {
       try {
         const name = Cookies.get("name");
         if (name) setUserName(name);
-        const [clientsRes, suppliersRes] = await Promise.all([
+        const [clientsRes, suppliersRes, orcamentoStatus] = await Promise.all([
           fetch("/api/vendedor/client"),
           fetch("/api/vendedor/supplier"),
+          fetch("/api/orcamento"),
         ]);
 
         const clients = await clientsRes.json();
         const suppliers = await suppliersRes.json();
+        const orcamentos: Orcamento[] = await orcamentoStatus.json();
 
+        const confirmados = orcamentos.filter(
+          (o: any) => o.status === "CONFIRMADO"
+        ).length;
         setStats({
           clients: clients.length,
           suppliers: suppliers.length,
           products: 0,
-          recentSales: 0,
+          recentSales: confirmados,
         });
       } catch (error) {
         console.error("Erro ao carregar estatísticas:", error);
@@ -71,6 +77,7 @@ export default function VendedorDashboard() {
         const [clientsRes, suppliersRes] = await Promise.all([
           fetch("/api/vendedor/client"),
           fetch("/api/vendedor/supplier"),
+          fetch("/api/orcamento"),
         ]);
 
         const clients = await clientsRes.json();

@@ -5,9 +5,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Params agora é Promise
   try {
-    const { id } = await params; // Await params antes de usar
+    const { id } = await params;
     const orcamento = await prisma.orcamento.findUnique({
       where: { id: Number.parseInt(id) },
       include: {
@@ -45,9 +44,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // Params agora é Promise
   try {
-    const { id } = await params; // Await params antes de usar
+    const { id } = await params;
     const body = await req.json();
     const { status, items, desconto, frete, observacoes } = body;
 
@@ -115,7 +113,6 @@ export async function PUT(
       ]);
     }
 
-    // Se mudando status para CANCELADO de CONFIRMADO, reverter movimentações
     if (status === "CANCELADO" && orcamentoAtual.status === "CONFIRMADO") {
       await prisma.$transaction([
         // Atualizar status do orçamento
