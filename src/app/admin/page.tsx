@@ -49,7 +49,8 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const router = useRouter();
-
+  const verifi = Cookies.get("token")
+  if(!verifi) return router.push("/")
   const handleLogout = () => {
     Cookies.remove("token");
     Cookies.remove("role");
