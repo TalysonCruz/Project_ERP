@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -49,8 +50,14 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const router = useRouter();
-  const verifi = Cookies.get("token")
-  if(!verifi) return router.push("/")
+  const { data: session, status } = useSession();
+  
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+  
   const handleLogout = () => {
     Cookies.remove("token");
     Cookies.remove("role");
