@@ -5,7 +5,6 @@ import { jwtVerify } from "jose";
 const JWT_SECRET = process.env.JWT_SECRET!;
 if (!JWT_SECRET) throw new Error("JWT_SECRET não definido no .env.local");
 
-// Função que checa se o usuário pode acessar a rota
 function authorize(pathname: string, role: string) {
   if (pathname.startsWith("/admin") && role !== "ADMIN") return false;
   if (pathname.startsWith("/manager") && !["ADMIN", "MANAGER"].includes(role))
@@ -27,7 +26,6 @@ function getCookie(req: NextRequest, name: string) {
   cookieHeader.split(";").forEach((cookie) => {
     const trimmedCookie = cookie.trim();
     const equalIndex = trimmedCookie.indexOf("=");
-
     if (equalIndex > 0) {
       const key = trimmedCookie.substring(0, equalIndex);
       const value = trimmedCookie.substring(equalIndex + 1);
@@ -52,25 +50,30 @@ export async function middleware(req: NextRequest) {
   ) {
     const token = getCookie(req, "token");
     if (!token) {
-      return NextResponse.json(
-        { message: "Token não fornecido!" },
-        { status: 401 }
-      );
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ message: "Token não fornecido!" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/", req.url));
     }
 
     try {
       const secret = new TextEncoder().encode(JWT_SECRET);
       const { payload } = await jwtVerify(token, secret);
 
-      // Checagem de autorização
       if (!authorize(pathname, payload.role as string)) {
-        return NextResponse.json(
-          { message: "Acesso negado! Permissão insuficiente." },
-          { status: 403 }
-        );
+        if (pathname.startsWith("/api")) {
+          return NextResponse.json(
+            { message: "Acesso negado! Permissão insuficiente." },
+            { status: 403 }
+          );
+        }
+        return NextResponse.redirect(new URL("/", req.url));
       }
     } catch (error) {
-      return NextResponse.json({ message: "Token inválido!" }, { status: 401 });
+      if (pathname.startsWith("/api")) {
+        return NextResponse.json({ message: "Token inválido!" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/", req.url));
     }
   }
 
